@@ -544,6 +544,13 @@ def main() -> None:
         help="Set population limit by adjusting population_free",
     )
 
+    group.add_argument(
+        "--reset-population",
+        type=float,
+        metavar="LIMIT",
+        help="Reset used population to 0 and set population capacity to LIMIT",
+    )
+
     args = parser.parse_args()
 
     pm = pymem.Pymem(PROCESS_NAME)
@@ -634,6 +641,26 @@ def main() -> None:
                 f"addr=0x{result.address:X}"
             )
             print()
+
+        elif args.reset_population is not None:
+            target_limit = args.reset_population
+
+            if target_limit < 0:
+                raise ValueError(
+                    "Population limit must be >= 0"
+                )
+
+            used_result = accessor.write_slot(11, 0.0)
+            free_result = accessor.write_slot(4, target_limit)
+
+            print(
+                f"population reset: "
+                f"0/{target_limit:g} "
+                f"(used={used_result.value:g}, "
+                f"free={free_result.value:g})"
+            )
+            print()
+
 
         print_slots(accessor)
 
